@@ -1,0 +1,213 @@
+---
+title: "Portfolio Assignment 2: Danish Kings"
+author: "Liv Lindeneg"
+date: "13/03-2026"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+kings <- read_csv2("data/konger.csv")
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+
+The task here is to load your Danish Monarchs csv into R using the `tidyverse` toolkit, calculate and explore the kings' duration of reign with pipes `%>%` in `dplyr` and plot it over time.
+
+## Load the kings
+
+
+
+##### 1. Look at the dataset that you are loading and check what its columns are separated by? 
+
+- In a plain text editor I can see that the columns are separated by: semicolons.
+
+##### 2. Create a `kings` object in R with the different functions below and inspect the different outputs.
+
+`read.csv()`
+
+- It will not load the data and make a object with the first function `read.csv` - maybe because it is expecting columns separated by commas, but my columns are separated by semicolons. I get an error message that the data has more columns than column names - so another possibility is that it is able to split some of the data into columns but it is not able to split my column names.
+
+`read_csv()`
+
+- Does not separate my data in columns, the output of the function is just one big column with all the data in. The data is not separated into different columns for every variable.
+
+`read.csv2()` 
+
+- This function is able to correctly read the semicolons and separate the columns.
+
+`read_csv2()`
+
+- This function also correctly separates the columns with the help of the semicolon.
+
+```{r Testing different function, eval=TRUE}
+# TESTING DIFFERENT FUNCTIONS
+
+kings1 <- read.csv("data/konger.csv")
+
+kings2 <- read_csv("data/konger.csv")
+
+kings3 <- read.csv2("data/konger.csv")
+
+kings4 <- read_csv2("data/konger.csv")
+```
+
+##### 3. Answer: 
+
+Which of these functions is a `tidyverse` function?
+
+- The  `read_csv2()` is a tidyverse function and it will be used below to make the kings object.
+
+What is the result of running `class()` on the `kings` object created with a tidyverse function.
+
+- Running the `class()` function tells me that the kings object is a tibble data frame.
+
+How many columns does the object have when created with these different functions?
+
+- Using the `ncol()` function will show the number of columns in the object.
+- The kings object has 8 columns as seen below.
+- The kings2 object has 1 column and the kings3 object has 8 columns, these results can be seen above, when testing the different `read` functions.
+
+Show the dataset so that we can see how R interprets each column
+
+- The function `glimpse()` will show all the columns and how they are interpreted by R.
+
+```{r Inspecting data, eval=TRUE, message=FALSE}
+# INSPECTING THE DATA
+
+kings <- read_csv2("data/konger.csv")
+
+class(kings)
+
+ncol(kings)
+
+glimpse(kings)
+
+```
+
+
+## Calculate the duration of reign for all the kings in your table
+
+Create a new column called  `duration` in the kings dataset, utilizing the `mutate()` function from tidyverse.
+
+- Using the `mutate()` function to make a new column in the dataset over duration of reign.
+- To calculate the duration in the `mutate()` function the "start_reign" column has been subtracted form the "end_reign" column.
+- Then using the `glimpse()` function it is possible to see the new column.
+
+```{r Duration of reign, eval=TRUE}
+# DURATION OF REIGN FOR ALL THE KINGS
+
+kings <- kings %>% 
+  mutate(duration = end_reign - start_reign)
+
+glimpse(kings)
+
+```
+
+## Calculate the average duration of reign for all rulers
+
+First you need to subset your `kings` dataset to the `duration` column. 
+If you subset it as a vector you can calculate average on it with `mean()` base-R function. 
+If you subset it as a tibble, you can calculate average on it with `summarize()` tidyverse function. Try both ways!
+
+
+- Using both the `mean()` function on a vector and the `summarise()` function on a tibble I get the same result.
+- When using both functions it is important to remove missing data, in both functions `na.rm=TRUE` has been used.
+- The average duration of the danish monarchs reign is 19.8 years.
+
+```{r Average duration of reign, eval=TRUE}
+# AVERAGE DURATION OF REIGN
+
+# Using the column duration as a vector and the mean() function
+mean(kings$duration, na.rm = TRUE)
+
+# Using the summarise() function on a tibble
+kings %>% 
+  summarise(mean_duration = mean(duration, na.rm = TRUE))
+
+```
+
+## How many and which kings enjoyed a longer-than-average duration of reign?
+
+You have calculated the average duration above. Use it now to `filter()` the `duration` column in  `kings` dataset. Display the result and also  count the resulting rows with `count()`
+
+- The average duration as calculated above is 19.8 years - I will round it up to 20 years.
+- Using the pipe and then the `select()` and `filter()` function will give me a tibble over the kings that have ruled for more than 20 years
+- In this tibble I have 22 rows - that means 22 kings who had longer than average reign, who ruled more than 20 years.
+- I can also use the `count()` function with the `filter()` function just to get the result 22.
+
+```{r Longer than average reign, eval=TRUE}
+# LONGER THAN AVERAGE REIGN
+
+kings %>% 
+  select(name, duration) %>% 
+  filter(duration > 20)
+
+count(filter(kings,duration>20))
+
+```
+
+
+## How many days did the three longest-ruling monarchs rule? 
+
+Sort kings by reign `duration` in the descending order. Select the three longest-ruling monarchs with the `slice()` function. Use `mutate()` to create `Days` column where you calculate the total number of days they ruled.
+
+- First using the `select()` function to only grab the name and duration column.
+- After that using the `arrange()` function will sort duration in descending order.
+- Using the `slice_head()` function a to get only the three longest ruling monarchs.
+- Then at the end using the `mutate()` to create a new column over days.
+
+```{r Three longest ruling kings, eval=TRUE}
+# THREE LONGEST RULING MONARCHS
+
+kings %>%
+  select(name, duration) %>% 
+  arrange(desc(duration)) %>% 
+  slice_head(n=3) %>% 
+  mutate(days = duration*365)
+
+```
+
+
+## Challenge: Plot the kings' duration of reign through time
+
+What is the long-term trend in the duration of reign among Danish monarchs? How does it relate to the historical violence trends? 
+
+Try to plot the duration of reign column in `ggplot` with `geom_point()` and  `geom_smooth()`
+In order to peg the duration (which is between 1-99) somewhere to the x axis with individual centuries, I recommend creating a new column `midyear` by adding to `startYear` the product of `endYear` minus the `startYear` divided by two (`startYear + (endYear-startYear)/2`).
+Now you can plot the kings dataset, plotting `midyear` along the x axis and `duration` along y axis
+BONUS: add a title, nice axis labels to the plot and make the theme B&W and font bigger to make it nice and legible!
+
+- First going to make a new object just for the plotting.
+- In the new object with the `mutate()` function making a new column called "mid_year", with the instructions given above.
+- Then starting with the `geom_point()` function, choosing the "mid_year" as the x axis and "duration" as the y axis.
+- Then using the `geom_smooth()` function.
+- At the end trying to customize the plots, by adding titles and labels, and also changing the theme.
+
+```{r Plot the kings reign duration, eval=TRUE, warning=FALSE, message=FALSE}
+# TRYING TO PLOT THE KINGS DURATION OF REIGN
+
+kings_plotting <- kings %>% 
+  mutate(mid_year=(start_reign+(end_reign-start_reign)/2))
+
+kings_plotting %>% 
+  ggplot(aes(x=mid_year, y=duration)) +
+  geom_point() +
+  labs(title = "Duration of Reign Through Time",
+         x = "Year",
+         y = "Duration of Reign in Years") +
+  theme_bw() +
+  theme(text = element_text(size = 12))
+  
+
+
+kings_plotting %>% 
+  ggplot(aes(x=mid_year, y=duration)) +
+  geom_smooth()+
+  labs(title = "Duration of Reign Through Time",
+         x = "Year",
+         y = "Duration of Reign in Years") +
+  theme_bw() +
+  theme(text = element_text(size = 12))
+```
