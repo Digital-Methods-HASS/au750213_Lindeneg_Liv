@@ -1,0 +1,147 @@
+---
+title: "Portfolio Assignment 3: Leaflet Maps"
+author: "Liv Lindeneg"
+date: "27/03-2026"
+output: 
+  html_document:
+    toc: true
+    theme: lumen
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load packages
+library(tidyverse)
+library(leaflet)
+library(htmlwidgets)
+library(googlesheets4)
+```
+
+## Making Maps with Leaflet
+
+- This assignment uses and explores Leaflet to make maps of Denmark.
+- First a more basic map of Denmark with different layers will be made.
+- Afterwards that map will be modified with specific points based on data made by fellow students in class.
+- This assignment will also look at different ways of visualizing the points and how to give the points popups.
+
+### Task 1: Create a Danish equivalent of AUSmap with Esri layers 
+
+- The method to making the map of Denmark follows the tutorial we were presented with in class of an Australian map
+
+```{r Denmark Map, eval=TRUE}
+# Coordinates: 56.1521976,10.1974321 from Google Maps
+
+l_dan <- leaflet() %>%
+  setView(10.1974321, 56.1521976, zoom = 13)
+
+esri <- grep("^Esri", providers, value = TRUE)
+
+for (provider in esri) {
+  l_dan <- l_dan %>% addProviderTiles(provider, group = provider)
+}
+
+DANmap <- l_dan %>%
+  addLayersControl(baseGroups = names(esri),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addMiniMap(tiles = esri[[1]], toggleDisplay = TRUE,
+             position = "bottomright") %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>% 
+  htmlwidgets::onRender("
+                        function(el, x) {
+                        var myMap = this;
+                        myMap.on('baselayerchange',
+                        function (e) {
+                        myMap.minimap.changeLayer(L.tileLayer.provider(e.name));
+                        })
+                        }") %>% 
+  addControl("", position = "topright")
+
+DANmap
+
+saveWidget(DANmap, "DANmap.html", selfcontained = TRUE)
+
+```
+
+### Task 2: Read in the googlesheet data you and your colleagues created into your DANmap object
+
+- Using the data from the googlesheet created in class and add it to the Denmark map created in task 1.
+- The data is over favorite places in Denmark.
+- This will make a map with specific location points.
+
+```{r Points from googlesheet, eval=TRUE, message=FALSE, warning=FALSE}
+
+gs4_deauth()
+
+places <- read_sheet("https://docs.google.com/spreadsheets/d/1PlxsPElZML8LZKyXbqdAYeQCDIvDps2McZx1cTVWSzI/edit#gid=124710918", col_types = "cccnncnc", range = "DAM2026")
+
+glimpse(places) 
+
+DANmap2 <- DANmap %>% 
+  addTiles() %>% 
+  addMarkers(lng = places$Longitude, 
+             lat = places$Latitude,
+             popup = paste(places$Placename, "<br>", places$Type))
+
+DANmap2
+
+saveWidget(DANmap2, "DANmap2.html", selfcontained = TRUE)  
+
+```
+
+### Task 3: Can you cluster the points in Leaflet?
+
+- Another way of visualizing the location points are by clustering the data on the map.
+- This will group the data together in areas where there are multiple data points.
+
+```{r Clustering, eval=TRUE, warning=FALSE}
+
+DANmap3 <- DANmap %>% 
+  addTiles() %>% 
+  addMarkers(lng = places$Longitude, 
+             lat = places$Latitude,
+             popup = paste(places$Placename, "<br>", places$Type),
+             clusterOptions = markerClusterOptions())
+
+DANmap3
+
+saveWidget(DANmap3, "DANmap3.html", selfcontained = TRUE)  
+
+```
+
+
+
+### Task 4: Look at the two maps (with and without clustering) and consider what each is good for and what not.
+
+- When you cluster the data as in task 3, it makes a map that makes it very easy to see if there are any trends geographically over the places picked by students. It look very clean and simple.
+- When using the points like in task 2, you can see specifically where these locations or places are. It can look a bit messy especially if there are a lot of data on the map, but it maps the data more precisely. When you cluster the data you have to zoom in to the individual data points. 
+
+
+
+### Task 5: Find out how to display the notes and classifications column in the map. 
+
+- The previous maps points have had the "placename" and "type" displayed in the popup.
+- We can add more columns in the popups if we want.
+- Have here added the "Description" column as well.
+
+```{r Popups, eval=TRUE, warning=FALSE}
+
+DANmap4 <- DANmap %>% 
+  addTiles() %>% 
+  addMarkers(lng = places$Longitude, 
+             lat = places$Latitude,
+             popup = paste(places$Placename, "<br>", places$Type, "<br>", places$Description))
+
+DANmap4
+
+saveWidget(DANmap4, "DANmap4.html", selfcontained = TRUE)  
+
+```
+
+
+
