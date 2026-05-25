@@ -18,6 +18,8 @@ The data used is published and available on Github under a *Open Data Commons Pu
 - It is filtered for unmarried women.
 - The `stilling` column has been heavily altered.
 
+## Figures
+The visuals created with the different R-scripts are in the `figure` folder as `.png` images
 
 ## License
 CC-BY 4.0 - Creative Commons Attribution 4.0 International.
