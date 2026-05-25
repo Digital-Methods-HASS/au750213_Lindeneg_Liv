@@ -1,0 +1,213 @@
+---
+title: "Portfolio Assignment 5: Women, Marriage and Employment"
+author: "Liv Lindeneg"
+date: "26/05-2026"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+ugifte_kvinder <- read_csv("data/kvinder_ugifte_1860.csv")
+knitr::opts_chunk$set(error = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Making a top 10 for all unmarried women 1860 Aarhus
+
+```{r Top 10 occupations}
+
+# Making a vector over descriptions that needs to be excluded
+# Not occupations
+ikke_erhverv <- c("datter", "plejedatter", "barn", "søn", "kone", "søster", "fattiglem", "huusfader", "indsidder",
+                  "forsørges af familie", "barnebarn", "steddatter", "tjenestekarl", "familiemedlem", "tjener forældrene",
+                  "dagleier", "gaardmand", "huusmand")
+
+
+# Making a top 10 with only occupations
+# Keep adding to the vector above until the top 10 is only occupations
+top_erhverv <- ugifte_kvinder %>% 
+  filter(!stilling %in% ikke_erhverv) %>%
+  count(stilling, sort = TRUE) %>%
+  slice_head(n = 10)
+
+top_erhverv
+
+# Mutate to get a column showing percentage as well
+percentage <- ugifte_kvinder %>%
+  count(stilling, sort = TRUE) %>% 
+  mutate(percentage = n/sum(n)*100) %>% 
+  filter(!stilling %in% ikke_erhverv) %>%
+  slice_head(n = 10)
+
+percentage
+```
+
+
+## Most common occupations for all unmarried women 1860 Aarhus
+
+#### The amount in numbers
+
+```{r most common occupations}
+# Making a plot
+# Showing the amount in numbers
+plot_toperhverv <- top_erhverv %>% 
+  ggplot(aes(x = reorder(stilling,n), y=n))+
+  geom_col(fill = "salmon") +
+  geom_text(aes(label = n),
+            hjust = 0.5,
+            size = 3) +
+  coord_flip() +labs(
+    title = "Top 10 occupations for all unmarried women 1860 Aarhus",
+    x = "Occupation",
+    y = "Count"
+  ) +
+  theme_bw()+
+  theme(text=element_text(size=12))
+
+plot_toperhverv
+```
+
+
+
+#### The amount in percentage
+
+```{r most common occupations percentage}
+
+# Making a plot
+# Showing the amount in percentage
+percentage_toperhverv <- percentage %>% 
+  ggplot(aes(x = reorder(stilling, percentage), y=percentage))+
+  geom_col(fill = "palegreen") +
+  geom_text(aes(label = paste0(round(percentage, 2), "%")),
+            hjust = 0.5,
+            size = 3) +
+  coord_flip() +labs(
+    title = "Top 10 occupations for all unmarried women 1860 Aarhus",
+    x = "Occupation",
+    y = "Percentage"
+  ) +
+  theme_bw()+
+  theme(text=element_text(size=12))
+
+percentage_toperhverv
+```
+
+## Making a top 10 for unmarried women over 25 years old 1860 Aarhus
+
+```{r top 10 occupations}
+# Filter to get only the women that are older than 25
+stilling_over25 <- ugifte_kvinder %>% 
+  filter(alder > 25) %>% 
+  count(stilling, sort = TRUE)
+
+
+# Making a top 10 for occupations for women over 25
+# Excluding non occupation descriptions 
+top_over25 <- stilling_over25 %>% 
+  filter(!stilling %in% ikke_erhverv) %>%
+  slice_head(n = 10)
+
+top_over25
+
+# Adding a column with percentage
+# Over 25 but percentage instead
+percentage_over25 <- stilling_over25 %>% 
+  mutate(percentage = n/sum(n)*100) %>% 
+  filter(!stilling %in% ikke_erhverv) %>%
+  slice_head(n = 10)
+
+percentage_over25
+```
+
+
+
+## Most common occupations for unmarried women over 25 years old 1860 Aarhus
+
+#### The amount in numbers
+
+```{r most common occupations over 25}
+
+# Making a plot
+# Showing the amount in numbers
+plot_over25 <- top_over25 %>% 
+  ggplot(aes(x = reorder(stilling,n), y=n))+
+  geom_col(fill = "lightskyblue1") +
+  geom_text(aes(label = n),
+            hjust = 0.5,
+            size = 3) +
+  coord_flip() +labs(
+    title = "Top 10 occupations for unmarried women over 25 1860 Aarhus",
+    x = "Occupation",
+    y = "Count"
+  ) +
+  theme_bw()+
+  theme(text=element_text(size=12))
+
+plot_over25
+
+```
+
+#### The amount in percentage
+
+```{r most common occupations over 25 percentage}
+
+# Making a plot
+# Showing the amount in percentage
+plot_over25percentage <- percentage_over25 %>% 
+  ggplot(aes(x = reorder(stilling, percentage), y=percentage))+
+  geom_col(fill = "plum2") +
+  geom_text(aes(label = paste0(round(percentage, 2), "%")),
+            hjust = 0.5,
+            size = 3) +
+  coord_flip() +labs(
+    title = "Top 10 occupations for unmarried women over 25 1860 Aarhus",
+    x = "Occupation",
+    y = "Percentage"
+  ) +
+  theme_bw()+
+  theme(text=element_text(size=12))
+
+plot_over25percentage
+
+```
+
+
+
+## Age distibution for the most common occupations
+
+#### Filtering
+
+```{r filtering}
+
+# Making a vector of the most common occupation
+# The vector is needed for filtering
+top_vector <- top_erhverv %>% 
+  pull(stilling) # to make a vector in order to filter
+
+# Filtering all the occupations and corresponding ages for the most common occupations
+alder_stilling <- ugifte_kvinder %>% 
+  select(alder, stilling) %>% 
+  filter(stilling %in% top_vector)
+```
+
+
+#### Plot
+```{r age distribution, warning=FALSE}
+
+# Making a plot
+# Multiple histograms using facets_wrap()
+plot_agedistri <- alder_stilling %>% 
+  ggplot(aes(x=alder, fill=stilling))+
+  geom_histogram(bins=20, color="white")+
+  facet_wrap(~stilling, scales="free_y")+
+  labs(title="Age distribution for the top 10 occupations among unmarried women 1860 Aarhus",
+       x="Age",
+       y="Count")+
+  theme_bw()+
+  theme(text=element_text(size=10))+
+  theme(legend.position = "none")
+
+plot_agedistri
+```
