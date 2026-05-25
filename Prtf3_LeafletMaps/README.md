@@ -7,6 +7,7 @@ Solution for the third portfolio assignment mapping favourite places in Denmark
 
 ## R-Script
 Code used to create the maps can be seen in the `LeafletMaps.Rmd` file or the corresponding `.html`
+- Maps might not show in the `.html`
 
 
 ## License
