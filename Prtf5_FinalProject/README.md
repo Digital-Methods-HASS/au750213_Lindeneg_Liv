@@ -2,8 +2,13 @@
 The final portfolio assignment investigating unmarried women's employment opportunities in 1860 Aarhus
 
 ## R-Scripts
+`Occupations_UnmarriedWomenAll.R` creates two visuals over the most common occupation among all unmarried women
 
+`Occupations_UnmarriedWomenOver25.R` creates two visuals over the most common occupations among unmarried women over 25
 
+`AgeDistributionOccupations_All.R` creates multiple plots showing the age of unmarried women working in the most common occupations
+
+`WomenMarriageEmployment.Rmd` and the corresponding `.html` colletct all the script into one file
 
 ## Data
 The data used is published and available on Github under a *Open Data Commons Public Domain Dedication and License (PDDL) v1.0.* license.
