@@ -6,4 +6,4 @@
 
 `Prtf3_LeafletMaps` Contains the final solution and denmark maps for the third portfolio assignment
 
-`Prtf5_FinalProject` Contains the solution, data and the visuals for the final portfolio assignment
+`Prtf5_FinalProject` Contains the solutions, data and the visuals for the final portfolio assignment
