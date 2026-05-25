@@ -5,6 +5,9 @@ Solution for the third portfolio assignment mapping favourite places in Denmark
 `ClusterMap` and `PointMap` shows two different ways of visualizing location points
 - `PopupExpanded` only difference from the `PointMap` is more information in the popups
 
+NOTICE: The maps might not show if using a `htmlpreview` tool
+- Please try and download the `html` files indstead if having problems
+
 ## R-Script
 Code used to create the maps can be seen in the `LeafletMaps.Rmd` file or the corresponding `.html`
 - Maps might not show in the `.html`
